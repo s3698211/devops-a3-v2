@@ -180,7 +180,7 @@ jobs:
       - run :
           name: deploy app
           command: |
-            helm upgrade devops-a3 artifacts/devops-a3-0.1.0.tgz -i -n test --wait --set image=$(cat artifacts/image.txt), dbhost=$(cat artifacts/dbendpoint.txt)
+            helm upgrade devops-a3 artifacts/devops-a3-0.1.0.tgz -i -n test --wait --set image=$(cat artifacts/image.txt),dbhost=$(cat artifacts/dbendpoint.txt)
 
 workflows:
   version: 2
