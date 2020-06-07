@@ -1,3 +1,3 @@
 replicaCount: 5
 image: 679243099170.dkr.ecr.us-east-1.amazonaws.com/app:1da5bbe8eb4469be85aca0ecf6d86202b7463cbf
-dbhost: acme-db-test.cluster-c9anjrpme9im.us-east-1.rds.amazonaws.com
+dbhost: localhost
