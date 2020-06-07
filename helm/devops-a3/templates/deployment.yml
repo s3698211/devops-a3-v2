@@ -14,9 +14,15 @@ spec:
     spec:
       containers:
       - image: {{ .Values.image }}
-        name: "tech-test-app"
+        name: "devops-a3"
         env:
-          - name: ENDPOINT
+          - name: DB_HOSTNAME
             value: {{ .Values.dbhost }}
+          - name: DB_USERNAME
+            value: postgres
+          - name: DB_PASSWORD
+            value: password
+          - name: DB_NAME
+            value: servian
         ports:
         - containerPort: 80

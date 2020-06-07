@@ -147,7 +147,7 @@ jobs:
       - run:
           name: Package helm
           command: | 
-            helm package helm/acme --app-version ${CIRCLE_SHA1} -d artifacts
+            helm package helm/devops-a3 --app-version ${CIRCLE_SHA1} -d artifacts
       - run:
           name: Package infra
           command: |
@@ -157,6 +157,26 @@ jobs:
           root: ./
           paths:
             - artifacts
+
+  deploy-test:
+    docker:
+      - image: cimg/base:2020.01
+    environment:
+      ENV: test
+    steps:
+      - attach_workspace:
+          at: ./
+
+      - setup-cd
+
+      - run: 
+          name: deploy infra
+          command: |
+            cd artifacts/infra
+            make init
+            make up
+
+      
 
 
 
