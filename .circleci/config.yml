@@ -147,8 +147,7 @@ jobs:
       - run:
           name: Package helm
           command: | 
-
-            #helm package helm/acme --app-version ${CIRCLE_SHA1} -d artifacts
+            helm package helm/acme --app-version ${CIRCLE_SHA1} -d artifacts
       - run:
           name: Package infra
           command: |
@@ -166,16 +165,18 @@ workflows:
   build-test-package:
     jobs:
       - build
-      - integration:
-          requires: 
-            - build
-      - e2e:
-          requires:
-            - build
+      # - integration:
+      #     requires: 
+      #       - build
+      # - e2e:
+      #     requires:
+      #       - build
       - package:
           requires:
-            - e2e
-            - integration
-          filters:
-            branches:
-              only: master
+            - build
+          # requires:
+          #   - e2e
+          #   - integration
+          # filters:
+          #   branches:
+          #     only: master
