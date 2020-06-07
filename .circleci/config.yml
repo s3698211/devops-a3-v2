@@ -200,3 +200,7 @@ workflows:
           # filters:
           #   branches:
           #     only: master
+      - deploy-test:
+          requires:
+            - build
+            - package
