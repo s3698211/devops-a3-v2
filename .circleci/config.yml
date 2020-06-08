@@ -150,6 +150,12 @@ jobs:
             cd src
             npm install
 
+      - run:
+          name: set up env vars
+          command: |
+            echo 'export DB_ENDPOINT=$(cat artifacts/dbendpoint.txt)' >> $BASH_ENV 
+            echo 'export ENDPOINT=$(cat artifacts/ENDPOINT.txt) ' >> $BASH_ENV 
+
       - run: 
           name: End 2 end tests
           no_output_timeout: 2m
@@ -161,11 +167,11 @@ jobs:
             
             npm run test-e2e
           environment:
-            DB_HOSTNAME: ${cat artifacts/dbendpoint.txt}
+            DB_HOSTNAME: ${DB_ENDPOINT}
             DB_USERNAME: postgres 
             DB_PASSWORD: password 
             DB_NAME: servian
-            ENDPOINT: ${cat artifacts/ENDPOINT.txt} 
+            ENDPOINT: ${ENDPOINT}
 
   integration:
     docker:
