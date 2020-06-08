@@ -177,10 +177,15 @@ jobs:
             make up
             terraform output endpoint > ../dbendpoint.txt
       
-      - run :
+      - run:
           name: deploy app
           command: |
             helm upgrade devops-a3 artifacts/devops-a3-0.1.0.tgz -i --namespace test --create-namespace --wait --set image=$(cat artifacts/image.txt),dbhost=$(cat artifacts/dbendpoint.txt)
+
+      - run:
+          name: migrate database
+          command: |
+            kubectl exec deployment/devops-a3 -n test -- node_modules/.bin/sequelize db:migrate
 
 workflows:
   version: 2
