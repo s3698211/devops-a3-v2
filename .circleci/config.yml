@@ -126,6 +126,11 @@ jobs:
             kubectl get deployment -n test
             kubectl exec deployment/devops-a3 -n test -- node_modules/.bin/sequelize db:migrate
             kubectl get services -n test devops-a3 -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}:{.spec.ports[0].port}' > ../ENDPOINT.txt
+
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - artifacts
             
   e2e-v2:
     docker:
@@ -135,6 +140,9 @@ jobs:
 
     steps: 
       - checkout
+
+      - attach_workspace:
+          at: ./
 
       - run:
           name: set up
