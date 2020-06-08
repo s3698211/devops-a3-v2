@@ -71,7 +71,7 @@ jobs:
           command: |
             cd src
             export IMAGE_TAG=${ECR}/${reponame}:${CIRCLE_SHA1}
-            echo ${IMAGE_TAG} > ../artifacts/image.txt
+            echo ${IMAGE_TAG} > ../artifacts/txt/image.txt
             docker build -t ${IMAGE_TAG} .
             aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR}
             docker push ${IMAGE_TAG}
@@ -108,12 +108,12 @@ jobs:
             cd artifacts/infra
             make init
             make up
-            terraform output endpoint > ../dbendpoint.txt
+            terraform output endpoint > ../txt/dbendpoint.txt
       
       - run:
           name: deploy app
           command: |
-            helm upgrade devops-a3 artifacts/devops-a3-0.1.0.tgz -i --namespace test --create-namespace --wait --set image=$(cat artifacts/image.txt),dbhost=$(cat artifacts/dbendpoint.txt)
+            helm upgrade devops-a3 artifacts/devops-a3-0.1.0.tgz -i --namespace test --create-namespace --wait --set image=$(cat artifacts/txt/image.txt),dbhost=$(cat artifacts/txt/dbendpoint.txt)
       
       - run: 
           name: wait for deployment
@@ -130,7 +130,7 @@ jobs:
       - persist_to_workspace:
           root: ./
           paths:
-            - artifacts
+            - artifacts/txt
             
   e2e-v2:
     docker:
@@ -149,6 +149,12 @@ jobs:
           command: |
             cd src
             npm install
+
+      - run:
+          name: test txt
+          command: |
+            cd artifacts/txt
+            cat image.txt  
 
       - run: 
           name: End 2 end tests
