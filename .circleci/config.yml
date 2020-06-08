@@ -167,11 +167,11 @@ jobs:
             
             npm run test-e2e
           environment:
-            DB_HOSTNAME: $(echo ${DB_ENDPOINT})
+            DB_HOSTNAME: acme-db-test.cluster-c9anjrpme9im.us-east-1.rds.amazonaws.com
             DB_USERNAME: postgres 
             DB_PASSWORD: password 
             DB_NAME: servian
-            ENDPOINT: $(echo ${ENDPOINT})
+            ENDPOINT: http://a952832ad4ba2438996b4667ae7690f0-1502932790.us-east-1.elb.amazonaws.com:3000/
 
   integration:
     docker:
