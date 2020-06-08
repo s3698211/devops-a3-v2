@@ -142,11 +142,14 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./
+
       - run:
-          name: test
+          name: set env vars
           command: |
-            cat artifacts/image.txt
-            cat artifacts/ENDPOINT.txt
+            echo 'export DB_HOSTNAME=$(cat artifacts/dbendpoint.txt)' >> $BASH_ENV
+            echo 'export ENDPOINT=$(cat artifacts/ENDPOINT.txt)' >> $BASH_ENV
+            echo ${DB_HOSTNAME}
+            echo ${ENDPOINT}
 
       - run:
           name: set up
@@ -161,11 +164,9 @@ jobs:
             cd src            
             npm run test-e2e
           environment:
-            DB_HOSTNAME: acme-db-test.cluster-c9anjrpme9im.us-east-1.rds.amazonaws.com
             DB_USERNAME: postgres 
             DB_PASSWORD: password 
             DB_NAME: servian
-            ENDPOINT: http://a952832ad4ba2438996b4667ae7690f0-1502932790.us-east-1.elb.amazonaws.com:3000/
 
   integration:
     docker:
