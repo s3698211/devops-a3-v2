@@ -131,9 +131,6 @@ jobs:
       - image: qawolf/qawolf:v0.9.2
     environment:
       QAW_HEADLESS: true
-      DB_USERNAME: postgres
-      DB_PASSWORD: password
-      DB_NAME: servian
 
     steps: 
       - checkout
@@ -141,7 +138,6 @@ jobs:
       - run:
           name: set up
           command: |
-
             cd src
             npm install 
 
@@ -167,6 +163,9 @@ jobs:
             
             npm run test-e2e
           environment:
+            DB_USERNAME: postgres 
+            DB_PASSWORD: password 
+            DB_NAME: servian
             ENDPOINT: $(kubectl get services -n test devops-a3 -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}:{.spec.ports[0].port}') 
 
   integration:
