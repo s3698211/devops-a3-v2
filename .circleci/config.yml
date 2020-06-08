@@ -145,7 +145,7 @@ jobs:
       - run:
           name: test
           command: |
-          cat artifacts/image.txt
+            cat artifacts/image.txt
 
       - run:
           name: set up
