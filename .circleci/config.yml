@@ -146,6 +146,7 @@ jobs:
           name: test
           command: |
             cat artifacts/image.txt
+            cat artifacts/ENDPOINT.txt
 
       - run:
           name: set up
