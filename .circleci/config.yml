@@ -185,7 +185,7 @@ jobs:
       - run:
           name: migrate database
           command: |
-            kubectl exec deployment/devops-a3 -n test -- node_modules/.bin/sequelize db:migrate
+            kubectl get deployment -n test
 
 workflows:
   version: 2
