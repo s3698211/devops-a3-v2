@@ -147,9 +147,10 @@ jobs:
           name: set env vars
           command: |
             echo 'export DB_HOSTNAME=$(cat artifacts/dbendpoint.txt)' >> $BASH_ENV
-            echo 'export ENDPOINT=$(cat artifacts/ENDPOINT.txt)' >> $BASH_ENV
+            echo 'export ENDPOINT=http://$(cat artifacts/ENDPOINT.txt)' >> $BASH_ENV
             echo ${DB_HOSTNAME}
             echo ${ENDPOINT}
+            
 
       - run:
           name: set up
