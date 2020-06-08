@@ -44,6 +44,122 @@ jobs:
       - store_test_results:
           path: src/test-results
 
+  package:
+    machine: true
+    environment:
+      ECR: 679243099170.dkr.ecr.us-east-1.amazonaws.com
+      reponame: app
+      NODE_ENV: production
+    steps:
+      - checkout
+
+      - run:
+          name: Set up
+          command: |
+            mkdir -p artifacts
+
+            # install AWS CLI
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+
+            # instll helm
+            curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      
+      - run: 
+          name: Build image
+          command: |
+            cd src
+            export IMAGE_TAG=${ECR}/${reponame}:${CIRCLE_SHA1}
+            echo ${IMAGE_TAG} > ../artifacts/image.txt
+            docker build -t ${IMAGE_TAG} .
+            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR}
+            docker push ${IMAGE_TAG}
+
+      - run:
+          name: Package helm
+          command: | 
+            helm package helm/devops-a3 --app-version ${CIRCLE_SHA1} -d artifacts
+
+      - run:
+          name: Package infra
+          command: |
+            cp -r infra artifacts/infra
+
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - artifacts
+
+  deploy-test:
+    docker:
+      - image: cimg/base:2020.01
+    environment:
+      ENV: test
+    steps:
+      - attach_workspace:
+          at: ./
+
+      - setup-cd
+
+      - run: 
+          name: deploy infra
+          command: |
+            cd artifacts/infra
+            make init
+            make up
+            terraform output endpoint > ../dbendpoint.txt
+      
+      - run:
+          name: deploy app
+          command: |
+            helm upgrade devops-a3 artifacts/devops-a3-0.1.0.tgz -i --namespace test --create-namespace --wait --set image=$(cat artifacts/image.txt),dbhost=$(cat artifacts/dbendpoint.txt)
+
+      - run:
+          name: migrate database
+          command: |
+            kubectl exec deployment/devops-a3 -n test -- node_modules/.bin/sequelize db:migrate
+            kubectl get deployment -n test
+
+  e2e-v2:
+    docker:
+      - image: qawolf/qawolf:v0.9.2
+    environment:
+      QAW_HEADLESS: true
+      DB_USERNAME: postgres
+      DB_PASSWORD: password
+      DB_NAME: servian
+
+    steps: 
+      - checkout
+
+      - run:
+          name: set up
+          command: |
+            # install kubectl
+            curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+            chmod +x ./kubectl 
+            sudo mv ./kubectl /usr/local/bin/kubectl
+
+            # configure kops
+            curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+            chmod +x kops-linux-amd64
+            sudo mv kops-linux-amd64 /usr/local/bin/kops
+            kops export kubecfg rmit.k8s.local --state s3://rmit-kops-state-pnj4kn
+
+      - run: 
+          name: End 2 end tests
+          no_output_timeout: 2m
+          command: |
+            cd src
+
+            npm run start:prod & 
+            npx wait-on http://localhost:3000
+            
+            npm run test-e2e
+          environment:
+            ENDPOINT: $(kubectl get services -n test devops-a3 -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}:{.spec.ports[0].port}')
+
   integration:
     docker:
       - image: circleci/node:lts
@@ -87,6 +203,7 @@ jobs:
       DB_PASSWORD: password
       DB_NAME: servian
       DB_HOSTNAME: localhost
+      ENDPOINT: http://a952832ad4ba2438996b4667ae7690f0-1502932790.us-east-1.elb.amazonaws.com:3000/
 
     steps: 
       - checkout
@@ -112,82 +229,6 @@ jobs:
             
             npm run test-e2e
 
-  package:
-    machine: true
-    environment:
-      ECR: 679243099170.dkr.ecr.us-east-1.amazonaws.com
-      reponame: app
-      NODE_ENV: production
-    steps:
-      - checkout
-
-      - run:
-          name: Set up
-          command: |
-            mkdir -p artifacts
-
-            # install AWS CLI
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
-
-            # instll helm
-            curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-      
-      - run: 
-          name: Build image
-          command: |
-            cd src
-            export IMAGE_TAG=${ECR}/${reponame}:${CIRCLE_SHA1}
-            echo ${IMAGE_TAG} > ../artifacts/image.txt
-            docker build -t ${IMAGE_TAG} .
-            aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ECR}
-            docker push ${IMAGE_TAG}
-
-      - run:
-          name: Package helm
-          command: | 
-            helm package helm/devops-a3 --app-version ${CIRCLE_SHA1} -d artifacts
-      - run:
-          name: Package infra
-          command: |
-            cp -r infra artifacts/infra
-
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - artifacts
-
-  deploy-test:
-    docker:
-      - image: cimg/base:2020.01
-    environment:
-      ENV: test
-    steps:
-      - attach_workspace:
-          at: ./
-
-      - setup-cd
-
-      - run: 
-          name: deploy infra
-          command: |
-            cd artifacts/infra
-            make init
-            make up
-            terraform output endpoint > ../dbendpoint.txt
-      
-      - run:
-          name: deploy app
-          command: |
-            helm upgrade devops-a3 artifacts/devops-a3-0.1.0.tgz -i --namespace test --create-namespace --wait --set image=$(cat artifacts/image.txt),dbhost=$(cat artifacts/dbendpoint.txt)
-
-      - run:
-          name: migrate database
-          command: |
-            kubectl exec deployment/devops-a3 -n test -- node_modules/.bin/sequelize db:migrate
-            kubectl get deployment -n test
-
 workflows:
   version: 2
   build-test-package:
@@ -212,3 +253,6 @@ workflows:
           requires:
             - build
             - package
+      - e2e-v2:
+          requires:
+            - deploy-test
