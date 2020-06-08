@@ -114,6 +114,11 @@ jobs:
           name: deploy app
           command: |
             helm upgrade devops-a3 artifacts/devops-a3-0.1.0.tgz -i --namespace test --create-namespace --wait --set image=$(cat artifacts/image.txt),dbhost=$(cat artifacts/dbendpoint.txt)
+      
+      - run: 
+          name: wait for deployment
+          command: |
+            sleep 20
 
       - run:
           name: migrate database
@@ -136,19 +141,19 @@ jobs:
       - run:
           name: set up
           command: |
-          
+
             cd src
             npm install 
 
             # install kubectl
             curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
             chmod +x ./kubectl 
-            sudo mv ./kubectl /usr/local/bin/kubectl
+            mv ./kubectl /usr/local/bin/kubectl
 
             # configure kops
             curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
             chmod +x kops-linux-amd64
-            sudo mv kops-linux-amd64 /usr/local/bin/kops
+            mv kops-linux-amd64 /usr/local/bin/kops
             kops export kubecfg rmit.k8s.local --state s3://rmit-kops-state-pnj4kn
 
       - run: 
