@@ -142,6 +142,10 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./
+      - run:
+          name: test
+          command: |
+          cat artifacts/image.txt
 
       - run:
           name: set up
