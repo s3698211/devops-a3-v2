@@ -140,21 +140,12 @@ jobs:
 
     steps: 
       - checkout
-      
-      - attach_workspace:
-          at: ./
 
       - run:
           name: set up
           command: |
             cd src
             npm install
-
-      - run:
-          name: set up env vars
-          command: |
-            echo 'export DB_ENDPOINT=$(cat artifacts/dbendpoint.txt)' >> $BASH_ENV 
-            echo 'export ENDPOINT=$(cat artifacts/ENDPOINT.txt) ' >> $BASH_ENV 
 
       - run: 
           name: End 2 end tests
