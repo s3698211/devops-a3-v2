@@ -167,11 +167,11 @@ jobs:
             
             npm run test-e2e
           environment:
-            DB_HOSTNAME: echo ${DB_ENDPOINT}
+            DB_HOSTNAME: $(echo ${DB_ENDPOINT})
             DB_USERNAME: postgres 
             DB_PASSWORD: password 
             DB_NAME: servian
-            ENDPOINT: echo ${ENDPOINT}
+            ENDPOINT: $(echo ${ENDPOINT})
 
   integration:
     docker:
