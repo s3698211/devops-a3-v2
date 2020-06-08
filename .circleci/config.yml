@@ -136,6 +136,7 @@ jobs:
       - run:
           name: set up
           command: |
+          
             cd src
             npm install 
 
@@ -161,7 +162,7 @@ jobs:
             
             npm run test-e2e
           environment:
-            ENDPOINT: $(kubectl get services -n test devops-a3 -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}:{.spec.ports[0].port}')
+            ENDPOINT: $(kubectl get services -n test devops-a3 -o=jsonpath='{.status.loadBalancer.ingress[0].hostname}:{.spec.ports[0].port}') 
 
   integration:
     docker:
