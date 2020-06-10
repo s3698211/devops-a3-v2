@@ -1,3 +1,9 @@
+# kubectl create namespace amazon-cloudwatch
+# kubectl create configmap cluster-info \
+# --from-literal=cluster.name=rmit.k8s.local \ 
+# --from-literal=logs.region=us-east-1 -n amazon-cloudwatch
+# kubectl apply -f fluentd.yaml
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
