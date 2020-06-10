@@ -1,6 +1,6 @@
 subnet_ids = [
   "subnet-00af845b4f3ddba08",
-  "subnet-0846f7e1d13f21f1c"
+  "subnet-0e9c2cb530dd64ea1"
 ]
 username = "postgres"
 password = "password"
